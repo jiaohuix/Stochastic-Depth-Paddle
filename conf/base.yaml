@@ -1,1 +1,23 @@
+data:
+  class_dim: 10
+  label_dict: {'0':'飞机','1':'汽车','2':'鸟','3':"猫",'4':"鹿",
+               '5':"狗",'6':"青蛙",'7':"马",'8':"船",'9':"卡车"}
+hparas:
+  P0: 1 # 初始化 drop path的概率
+  PL: 0.5 # 最后一个block drop path的概率
+  num_epochs: 500
+  batch_size: 128
+  learning_strategy:
+    lr: # PiecewiseDecay
+      bounds: [250,375]
+      values: [0.1,0.01,0.001]
+    momentum: 0.9
+    weight_decay: 1e-4
+    use_nesterov: True
+  log_steps: 50
+  val_steps: 200
+  save_steps: 1000
+  save_dir: "ckpt"
 
+model:
+  layers: 110
