@@ -1,23 +1,26 @@
 data:
-  class_dim: 10
+  class_dim: 10 # 类别数
   label_dict: {'0':'飞机','1':'汽车','2':'鸟','3':"猫",'4':"鹿",
                '5':"狗",'6':"青蛙",'7':"马",'8':"船",'9':"卡车"}
 hparas:
+  # survival probility，各层被激活的概率，公式：pl=1-(l/L)*(1-PL) #p0=1时
   P0: 1 # 初始化 drop path的概率
   PL: 0.5 # 最后一个block drop path的概率
   num_epochs: 500
   batch_size: 128
   learning_strategy:
-    lr: # PiecewiseDecay
+    lr: # PiecewiseDecay，到250，375epoch，学习率都除10
       bounds: [250,375]
       values: [0.1,0.01,0.001]
-    momentum: 0.9
-    weight_decay: 1e-4
-    use_nesterov: True
+    momentum: 0.9 # 动量
+    weight_decay: 1e-4 # 权重衰减
+    use_nesterov: True # 使用牛顿法
   log_steps: 50
-  val_steps: 200
-  save_steps: 1000
+  val_steps: 5000
+  save_steps: 5000
   save_dir: "ckpt"
 
 model:
-  layers: 110
+  #除了首尾两层，该resnet中间有3个layer，每个layer有n个block，1个block2个conv，故只需层数需为2+6n
+  # 常见的有 layers={20,32,44,110,1202}；即n={3,5,7,9}
+  layers: 110 # 网络层数
