@@ -56,7 +56,8 @@ def prep_model(conf,model):
     lr,momentum,decay=learn_stg['lr'],learn_stg['momentum'],eval(learn_stg['weight_decay'])
     scheduler = paddle.optimizer.lr.PiecewiseDecay(boundaries=lr['bounds'], values=lr['values'], verbose=True)
     use_nesterov=learn_stg['use_nesterov']
-    optimizer = paddle.optimizer.Momentum(parameters=model.parameters(),learning_rate=0.001,momentum=momentum,weight_decay=decay,use_nesterov=use_nesterov) # 牛顿动量
+    optimizer = paddle.optimizer.Momentum(parameters=model.parameters(),learning_rate=scheduler,
+                                          momentum=momentum,weight_decay=decay,use_nesterov=use_nesterov) # 牛顿动量
     metric = paddle.metric.Accuracy()
     return criterion,scheduler,optimizer,metric
 
@@ -65,7 +66,7 @@ def train(conf,model,train_loader,dev_loader):
     criterion,scheduler, optimizer,metric=prep_model(conf,model)
     steps = 0
     Iters, total_loss, total_acc = [], [], []
-    max_acc=0.9
+    max_acc=0
     # total_val_loss,total_val_acc=[],[]
     max_epochs=conf['hparas']['num_epochs']
     total_steps=len(train_loader)*max_epochs
@@ -96,7 +97,7 @@ def train(conf,model,train_loader,dev_loader):
 
             #保存模型参数
             if steps % conf['hparas']["save_steps"] == 0:
-                save_path = os.path.join(conf['hparas']["save_dir"],'model_{}.pdparams'.format(steps+190000))
+                save_path = os.path.join(conf['hparas']["save_dir"],'model_{}.pdparams'.format(steps))
                 logger.info(f'Train | Save model to: ' + save_path)
                 paddle.save(model.state_dict(),save_path)
             # 评估模型
@@ -106,8 +107,8 @@ def train(conf,model,train_loader,dev_loader):
                     max_acc=val_acc
                     paddle.save(model.state_dict(),os.path.join(conf['hparas']["save_dir"],"best.pdparams"))
         metric.reset()
-        # scheduler.step() # update lr each epoch
-    paddle.save(model.state_dict(),os.path.join(conf['hparas']["save_dir"],"final2.pdparams"))
+        scheduler.step() # update lr each epoch
+    paddle.save(model.state_dict(),os.path.join(conf['hparas']["save_dir"],"final.pdparams"))
     draw_process("trainning loss","red",Iters,total_loss,"trainning loss")
     draw_process("trainning acc","green",Iters,total_acc,"trainning acc")
 
