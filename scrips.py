@@ -7,6 +7,7 @@ from tqdm import tqdm
 import numpy as np
 import paddle.vision.transforms as T
 import matplotlib.pyplot as plt
+from data import CifarDataset
 from utils import logger
 
 def prep_loader(conf):
@@ -25,11 +26,12 @@ def prep_loader(conf):
                             T.Normalize(mean=mean, std=std)])
 
     # 加载数据
-    train_dataset = paddle.vision.datasets.Cifar10(mode='train', transform=transform1)
-    dev_dataset = paddle.vision.datasets.Cifar10(mode='test', transform=transform2)  # 验证集使用与训练集相同的增强策略，检验模型的泛化能力
+    train_dataset = paddle.vision.datasets.Cifar10(mode='train')
+    train_dset=CifarDataset(train_dataset,dev_ratio=0.1,transform=transform1)
+    dev_dset=CifarDataset(train_dataset,dev_ratio=0.1,is_train=False,transform=transform2)
     # 加载dataloader
-    train_loader = paddle.io.DataLoader(train_dataset, batch_size=conf['hparas']['batch_size'], shuffle=True)
-    dev_loader = paddle.io.DataLoader(dev_dataset, batch_size=conf['hparas']['batch_size'], shuffle=False)
+    train_loader = paddle.io.DataLoader(train_dset, batch_size=conf['hparas']['batch_size'], shuffle=True)
+    dev_loader = paddle.io.DataLoader(dev_dset, batch_size=conf['hparas']['batch_size'], shuffle=False)
     return train_loader,dev_loader
 
 def same_seeds(seed=1024):
@@ -98,6 +100,8 @@ def train(conf,model,train_loader,dev_loader):
             #保存模型参数
             if steps % conf['hparas']["save_steps"] == 0:
                 save_path = os.path.join(conf['hparas']["save_dir"],'model_{}.pdparams'.format(steps))
+                paddle.save(optimizer.state_dict(), os.path.join(conf['hparas']["save_dir"], "model_{}.pdopt".format(steps)))
+
                 logger.info(f'Train | Save model to: ' + save_path)
                 paddle.save(model.state_dict(),save_path)
             # 评估模型
@@ -106,11 +110,11 @@ def train(conf,model,train_loader,dev_loader):
                 if val_acc>max_acc:
                     max_acc=val_acc
                     paddle.save(model.state_dict(),os.path.join(conf['hparas']["save_dir"],"best.pdparams"))
+                    paddle.save(optimizer.state_dict(),os.path.join(conf['hparas']["save_dir"],"best.pdopt"))
         metric.reset()
         scheduler.step() # update lr each epoch
     paddle.save(model.state_dict(),os.path.join(conf['hparas']["save_dir"],"final.pdparams"))
-    draw_process("trainning loss","red",Iters,total_loss,"trainning loss")
-    draw_process("trainning acc","green",Iters,total_acc,"trainning acc")
+    paddle.save(optimizer.state_dict(), os.path.join(conf['hparas']["save_dir"], "final.pdopt"))
 
 @paddle.no_grad()
 def evaluate(model,data_loader):
