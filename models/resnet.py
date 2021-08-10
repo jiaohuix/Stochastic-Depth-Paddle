@@ -2,7 +2,7 @@
 n=18时，res110，用于跑cifar10
 '''
 import paddle.nn as nn
-from .layers import DropPath,Identity
+from .layers import StochasticLayer
 from paddle.nn.initializer import Constant,KaimingNormal,TruncatedNormal
 
 kaiming_normal_=KaimingNormal()
@@ -15,19 +15,19 @@ class ResidualBlock(nn.Layer):
         super(ResidualBlock,self).__init__()
         if norm_layer is None:
             norm_layer=nn.BatchNorm2D
-        self.drop_path = DropPath(drop_prob) if drop_prob > 0. else Identity()
-        self.fl=nn.Sequential(
+        fl=nn.Sequential( #第l层的function
             nn.Conv2D(inchannel,outchannel,3,stride,1,bias_attr=False), # 为啥不用bias
             norm_layer(outchannel),
             nn.ReLU(),
             nn.Conv2D(outchannel, outchannel, 3, 1, 1,bias_attr=False),
             norm_layer(outchannel))
+        self.sd_layer = StochasticLayer(act_layer=fl,drop_prob=drop_prob)
         self.relu = nn.ReLU()
         self.downsample=downsample # 对x下采样保证与f(x)可以相加
 
     def forward(self,x):
         identity=x
-        out=self.drop_path(self.fl(x))
+        out=self.sd_layer(x)
         if self.downsample is not None:
             identity=self.downsample(identity)
         out+=identity
@@ -39,7 +39,7 @@ class ResNet(nn.Layer):
         # calc drop prob
         L=num_blocks*3 # 总共多少个block
         self.num_blocks=num_blocks # 一层block数
-        self.calc_drop_prob = lambda l: 1 - P0 + (l / L) * (1 - PL)
+        self.calc_drop_prob = lambda l: 1 - P0 + (l / L) * (1 - PL) # 失活概率
         if norm_layer is None:
             norm_layer=nn.BatchNorm2D
         self._norm_layer = norm_layer
