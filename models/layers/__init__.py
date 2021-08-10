@@ -1,1 +1,1 @@
-from .drop import DropPath,Identity
+from .drop import *
