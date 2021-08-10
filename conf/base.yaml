@@ -7,7 +7,7 @@ hparas:
   P0: 1 # 初始化 drop path的概率
   PL: 0.5 # 最后一个block drop path的概率
   num_epochs: 500
-  batch_size: 128
+  batch_size: 1024
   learning_strategy:
     lr: # PiecewiseDecay，到250，375epoch，学习率都除10
       bounds: [250,375]
