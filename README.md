@@ -8,7 +8,7 @@
 
 - 随机深度的训练方法显著减少了训练时间（训练时平均仅需训练原来模型的3/4），并且降低了cifar10验证错误率：使用110层resnet错误率为5.25%，1202层错误率降低为4.91%。
 
-- 本项目实现了具有随机深度的残差网络，并用110层resnet在cifar10验证集上达到了5.18%错误率(准确率94.82%,500epoch)。
+- 本项目实现了具有随机深度的残差网络，并用110层resnet在cifar10验证集上达到了5.18%错误率(准确率95.48%,500epoch)。
 
 - 错误率比较：
 
@@ -16,7 +16,7 @@
   | ---------- | -------- | --------- |
   | Kaiming He | 6.41%    | 6.67%     |
   | this paper | 5.25%    | 4.91%     |
-  | me         | 5.18%    | -         |
+  | me         | 4.52%    | -         |
 
   还等什么！让我们一起硬train一发！（硬train1202层的只需把配置中layers改为1202）
 
@@ -57,7 +57,7 @@ python main.py  --config ./conf/base.yaml --mode eval
 ## 4.Link
 
 - res110权重
-  - 百度网盘链接：https://pan.baidu.com/s/1pD0AzuQHoYOQISL42hS2iA 提取码：szre  
+  - 百度网盘链接：https://pan.baidu.com/s/1jURowo9yzTs-_Sy0wc4ibQ  提取码：spr5
   - 下载后放到工作目录的ckpt文件夹下
 - [aistudio Stochastic Depth Paddle复现](https://aistudio.baidu.com/aistudio/projectdetail/2262209?shared=1)
 
