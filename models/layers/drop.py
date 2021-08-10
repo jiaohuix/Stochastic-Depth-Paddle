@@ -5,10 +5,10 @@ def drop_path(x,act_layer,drop_prob: float = 0., training: bool = False):
     """Drop paths (Stochastic Depth) per sample (when applied in main path of residual blocks).
     """
     assert drop_prob>=0 and drop_prob<=1
+    keep_prob = paddle.to_tensor(1 - drop_prob)  # pl 第l层的存活概率
     if not training: #  如果是test，则直接输出激活输出  f(x),否则依概率失活
-        return act_layer(x)
+        return keep_prob*act_layer(x)
     else: # 如果有存活概率pl，则bl为p=pl的伯努利随机变量，bl=1时x被激活，反之返回x
-        keep_prob = paddle.to_tensor(1 - drop_prob) # pl 第l层的存活概率
         bl=paddle.bernoulli(keep_prob)
         if bl:
             return act_layer(x)
