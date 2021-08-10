@@ -2,7 +2,7 @@
 n=18时，res110，用于跑cifar10
 '''
 import paddle.nn as nn
-from .layers import StochasticLayer
+from .layers import StochasticLayer,ChannelPad
 from paddle.nn.initializer import Constant,KaimingNormal,TruncatedNormal
 
 kaiming_normal_=KaimingNormal()
@@ -71,9 +71,12 @@ class ResNet(nn.Layer):
         norm_layer = self._norm_layer
         downsample=None
         if stride!=1 or self.inplanes!=planes: # 如果要stride=2，且通道改变，对x进行下采样
+            # downsample=nn.Sequential(
+            #     nn.Conv2D(self.inplanes,planes,kernel_size=1,stride=stride,bias_attr=False),
+            #     norm_layer(planes))
             downsample=nn.Sequential(
-                nn.Conv2D(self.inplanes,planes,kernel_size=1,stride=stride,bias_attr=False),
-                norm_layer(planes)
+                nn.AvgPool2D(kernel_size=stride, stride=stride),
+                ChannelPad()
             )
 
         layers=[]
@@ -95,3 +98,4 @@ class ResNet(nn.Layer):
         x=x.flatten(1)
         x=self.fc(x)
         return x
+
