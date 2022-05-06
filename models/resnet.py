@@ -16,7 +16,7 @@ class ResidualBlock(nn.Layer):
         if norm_layer is None:
             norm_layer=nn.BatchNorm2D
         fl=nn.Sequential( #第l层的function
-            nn.Conv2D(inchannel,outchannel,3,stride,1,bias_attr=False), # 为啥不用bias
+            nn.Conv2D(inchannel,outchannel,3,stride,1,bias_attr=False), 
             norm_layer(outchannel),
             nn.ReLU(),
             nn.Conv2D(outchannel, outchannel, 3, 1, 1,bias_attr=False),
